@@ -8,17 +8,17 @@ name: campuslab-apps
 # broker (reintentan solos, ver ms-campuslab-notify y los *EventPublisher*).
 
 x-common-env: &common-env
-  AZURE_TENANT_ID: CHANGEME-TENANT-ID
-  AZURE_CLIENT_ID: CHANGEME-CLIENT-ID
-  DB_HOST: campuslab-oracle
+  AZURE_TENANT_ID: b4209dc1-05f6-41b7-8421-473d3b030c03
+  AZURE_CLIENT_ID: 12b62be7-f3e9-4258-8731-780bb8dda6a7
+  DB_HOST: 10.0.11.51
   DB_PORT: 1521
   DB_SERVICE: XEPDB1
   DB_PASSWORD: campuslab
-  RABBITMQ_HOST: campuslab-rabbitmq
+  RABBITMQ_HOST: 10.0.12.254
   RABBITMQ_PORT: 5672
   RABBITMQ_USERNAME: guest
   RABBITMQ_PASSWORD: guest
-  KAFKA_BOOTSTRAP_SERVERS: campuslab-kafka-broker:9092
+  KAFKA_BOOTSTRAP_SERVERS: 10.0.12.147:9092
 
 services:
   bookings:
