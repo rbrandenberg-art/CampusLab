@@ -1,5 +1,7 @@
 package CampusLab.ms_campuslab_bff.security;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,21 +11,10 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-/**
- * Fachada de seguridad del BFF: exige JWT valido en todo endpoint salvo {@code /actuator/health}
- * y autoriza por rol ANTES de reenviar al microservicio de dominio correspondiente (seccion 9
- * del brief, tabla de pantallas/roles).
- *
- * <p>Reglas de autorizacion:</p>
- * <ul>
- *   <li>{@code /api/catalog/**} escritura (POST/PUT/PATCH/DELETE) -> solo ADMIN.</li>
- *   <li>{@code /api/catalog/**} lectura (GET) -> ADMIN, TECNICO.</li>
- *   <li>{@code /api/bookings/**} cualquier metodo -> ADMIN, TECNICO, ESTUDIANTE.</li>
- *   <li>{@code /api/report/**} (solo GET) -> ADMIN.</li>
- *   <li>{@code /api/audit/**} (solo GET) -> ADMIN, AUDITOR.</li>
- * </ul>
- */
 @Configuration
 public class SecurityConfig {
 
@@ -31,6 +22,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
             JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -58,15 +50,24 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /**
-     * Convertidor de autenticacion JWT -> authorities. El nombre del claim de roles es
-     * configurable (placeholder hasta que exista el App Registration real de Azure AD).
-     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter(
             @Value("${campuslab.security.jwt.roles-claim:roles}") String rolesClaim) {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(new RolesClaimGrantedAuthoritiesConverter(rolesClaim));
         return converter;
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
