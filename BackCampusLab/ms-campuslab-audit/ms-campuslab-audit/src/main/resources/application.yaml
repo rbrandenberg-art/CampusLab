@@ -1,0 +1,69 @@
+server:
+  port: ${SERVER_PORT:8084}
+
+spring:
+  application:
+    name: ms-campuslab-audit
+
+  autoconfigure:
+    # AzureEventHubsKafkaOAuth2AutoConfiguration (de spring-cloud-azure-starter-active-directory)
+    # rompe el arranque con NoClassDefFoundError al combinarse con spring-kafka bajo Spring Boot 4.0.8
+    # (solo aplica a Event Hubs, que no usamos aquí). Confirmado en ms-campuslab-kafka y reproducido
+    # en este servicio.
+    exclude:
+      - com.azure.spring.cloud.autoconfigure.implementation.kafka.AzureEventHubsKafkaOAuth2AutoConfiguration
+
+  datasource:
+    url: jdbc:oracle:thin:@//${DB_HOST:localhost}:${DB_PORT:1521}/${DB_SERVICE:XEPDB1}
+    username: ${DB_USER:campuslab_audit}
+    password: ${DB_PASSWORD:campuslab}
+    driver-class-name: oracle.jdbc.OracleDriver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+
+  cloud:
+    azure:
+      active-directory:
+        credential:
+          client-id: ${AZURE_CLIENT_ID:CHANGEME-CLIENT-ID}
+        profile:
+          tenant-id: ${AZURE_TENANT_ID:CHANGEME-TENANT-ID}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID:CHANGEME-TENANT-ID}/v2.0
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: audit-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+app:
+  kafka:
+    topics:
+      bookings-events: bookings.events
+      bookings-events-dlt: bookings.events.DLT
+      audit-timeline: audit.timeline
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

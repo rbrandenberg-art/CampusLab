@@ -1,0 +1,63 @@
+name: campuslab-kafka
+
+# El enunciado pide Zookeeper (3 nodos) + Kafka (3 brokers) para las
+# evaluaciones en EC2 (ec2-kafka). Para desarrollo local se levanta un solo
+# Zookeeper y un solo broker Kafka: multiplicar nodos en un solo host Docker
+# Desktop no aporta valor para probar productores/consumidores, y
+# ms-campuslab-kafka ya deja el replication-factor configurable
+# (KAFKA_REPLICATION_FACTOR, default 1 aquí, 3 en producción). El clúster de 3
+# nodos se arma en la fase de despliegue a EC2 (infra/aws).
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: campuslab-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - campuslab-net
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: campuslab-kafka-broker
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: campuslab-zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://campuslab-kafka-broker:9092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    ports:
+      - "9092:29092"
+    volumes:
+      - campuslab-kafka-data:/var/lib/kafka/data
+    networks:
+      - campuslab-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: campuslab-kafka-ui
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: campuslab
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: campuslab-kafka-broker:9092
+    ports:
+      - "8090:8080"
+    networks:
+      - campuslab-net
+
+volumes:
+  campuslab-kafka-data:
+    name: campuslab-kafka-data
+
+networks:
+  campuslab-net:
+    external: true

@@ -1,0 +1,16 @@
+server:
+  port: ${SERVER_PORT:8083}
+
+spring:
+  application:
+    name: ms-campuslab-notify
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        # La topología (colas/exchanges/DLQ) la declara ms-campuslab-rabbitmq.
+        # No debe ser fatal si esta app arranca antes de que existan las colas.
+        missing-queues-fatal: false

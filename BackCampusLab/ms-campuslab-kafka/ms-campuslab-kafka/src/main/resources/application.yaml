@@ -1,0 +1,35 @@
+server:
+  port: ${SERVER_PORT:8087}
+
+spring:
+  application:
+    name: ms-campuslab-kafka
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  autoconfigure:
+    # AzureEventHubsKafkaOAuth2AutoConfiguration (traida por spring-cloud-azure-starter-active-directory)
+    # referencia una clase de spring-boot-kafka 4.1.x incompatible con el Spring Boot 4.0.8 fijado
+    # en el parent de este proyecto, y solo aplica a Event Hubs (que no usamos: Kafka local plano).
+    exclude:
+      - com.azure.spring.cloud.autoconfigure.implementation.kafka.AzureEventHubsKafkaOAuth2AutoConfiguration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID:CHANGEME-TENANT-ID}/v2.0
+
+azure:
+  tenant-id: ${AZURE_TENANT_ID:CHANGEME-TENANT-ID}
+  client-id: ${AZURE_CLIENT_ID:CHANGEME-CLIENT-ID}
+
+campuslab:
+  security:
+    jwt:
+      roles-claim: ${JWT_ROLES_CLAIM:roles}
+      scope-claim: ${JWT_SCOPE_CLAIM:scp}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

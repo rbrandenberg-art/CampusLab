@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: ms-campuslab-bff
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID:CHANGEME-TENANT-ID}/v2.0
+
+azure:
+  activedirectory:
+    profile:
+      tenant-id: ${AZURE_TENANT_ID:CHANGEME-TENANT-ID}
+    credential:
+      client-id: ${AZURE_CLIENT_ID:CHANGEME-CLIENT-ID}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+# Fachada BFF: no tiene BD propia, solo reenvia (proxy) hacia los microservicios de dominio.
+# Convencion de puertos de desarrollo (localhost) usada por todos los agentes/servicios del caso:
+#   ms-campuslab-bff       -> 8080 (este servicio, detras del API Gateway)
+#   ms-campuslab-bookings  -> 8081
+#   ms-campuslab-catalog   -> 8082
+#   ms-campuslab-notify    -> 8083 (sin API publica, solo referencia)
+#   ms-campuslab-audit     -> 8084
+#   ms-campuslab-report    -> 8085
+campuslab:
+  security:
+    jwt:
+      # Nombre del claim de roles en el JWT. Placeholder hasta que exista el App Registration
+      # real de Azure AD (seccion 4 del brief): "roles" (App roles) o "scp" (scopes delegados).
+      roles-claim: ${JWT_ROLES_CLAIM:roles}
+  services:
+    bookings-url: ${BOOKINGS_SERVICE_URL:http://localhost:8081}
+    catalog-url: ${CATALOG_SERVICE_URL:http://localhost:8082}
+    notify-url: ${NOTIFY_SERVICE_URL:http://localhost:8083}
+    audit-url: ${AUDIT_SERVICE_URL:http://localhost:8084}
+    report-url: ${REPORT_SERVICE_URL:http://localhost:8085}

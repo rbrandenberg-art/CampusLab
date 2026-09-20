@@ -1,0 +1,37 @@
+name: campuslab-mq
+
+# El enunciado pide un clúster de 2 nodos RabbitMQ para las evaluaciones en EC2
+# (ec2-mq). Para el entorno de desarrollo local se levanta un solo nodo: un
+# clúster real de RabbitMQ en un solo host Docker Desktop añade fragilidad
+# (erlang cookie compartido, resolución de hostnames) sin aportar valor para
+# probar la lógica de negocio. El clúster de 2 nodos se arma en la fase de
+# despliegue a EC2 (infra/aws), reutilizando esta misma imagen.
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: campuslab-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    volumes:
+      - campuslab-rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - campuslab-net
+
+volumes:
+  campuslab-rabbitmq-data:
+    name: campuslab-rabbitmq-data
+
+networks:
+  campuslab-net:
+    external: true

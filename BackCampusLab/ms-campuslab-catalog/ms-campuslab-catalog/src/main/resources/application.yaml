@@ -1,0 +1,60 @@
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  application:
+    name: ms-campuslab-catalog
+
+  autoconfigure:
+    # AzureEventHubsKafkaOAuth2AutoConfiguration (traida por spring-cloud-azure-starter-active-directory)
+    # referencia una clase de spring-boot-kafka 4.1.x incompatible con el Spring Boot 4.0.8 fijado
+    # en el parent de este proyecto, y solo aplica a Event Hubs (que no usamos: Kafka local plano).
+    # Sin esto, el contexto de Spring falla al arrancar (NoClassDefFoundError). Detectado y
+    # confirmado en ms-campuslab-kafka; misma causa raíz aquí por combinar spring-kafka + azure-ad-starter.
+    exclude:
+      - com.azure.spring.cloud.autoconfigure.implementation.kafka.AzureEventHubsKafkaOAuth2AutoConfiguration
+
+  datasource:
+    url: jdbc:oracle:thin:@//${DB_HOST:localhost}:${DB_PORT:1521}/${DB_SERVICE:XEPDB1}
+    username: ${DB_USER:campuslab_catalog}
+    password: ${DB_PASSWORD:campuslab}
+    driver-class-name: oracle.jdbc.OracleDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID:CHANGEME-TENANT-ID}/v2.0
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: catalog-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+app:
+  azure:
+    tenant-id: ${AZURE_TENANT_ID:CHANGEME-TENANT-ID}
+    client-id: ${AZURE_CLIENT_ID:CHANGEME-CLIENT-ID}
+  security:
+    roles-claim: roles
+  kafka:
+    topics:
+      bookings-events: bookings.events
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

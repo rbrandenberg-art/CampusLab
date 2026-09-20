@@ -1,0 +1,123 @@
+name: campuslab-apps
+
+# Requiere que infra/db, infra/mq e infra/kafka ya estén arriba (docker compose
+# no puede expresar "depends_on" entre stacks distintos). Orden de arranque:
+#   1) infra/db     2) infra/mq     3) infra/kafka     4) infra/apps
+# Los microservicios con JPA (bookings/catalog/audit/report) fallan duro si
+# Oracle no está disponible; RabbitMQ/Kafka toleran arrancar antes que el
+# broker (reintentan solos, ver ms-campuslab-notify y los *EventPublisher*).
+
+x-common-env: &common-env
+  AZURE_TENANT_ID: CHANGEME-TENANT-ID
+  AZURE_CLIENT_ID: CHANGEME-CLIENT-ID
+  DB_HOST: campuslab-oracle
+  DB_PORT: 1521
+  DB_SERVICE: XEPDB1
+  DB_PASSWORD: campuslab
+  RABBITMQ_HOST: campuslab-rabbitmq
+  RABBITMQ_PORT: 5672
+  RABBITMQ_USERNAME: guest
+  RABBITMQ_PASSWORD: guest
+  KAFKA_BOOTSTRAP_SERVERS: campuslab-kafka-broker:9092
+
+services:
+  bookings:
+    build: ../../BackCampusLab/ms-campuslab-bookings/ms-campuslab-bookings
+    image: campuslab/bookings:latest
+    container_name: campuslab-bookings
+    environment:
+      <<: *common-env
+      DB_USER: campuslab_bookings
+    ports:
+      - "8081:8081"
+    networks:
+      - campuslab-net
+
+  catalog:
+    build: ../../BackCampusLab/ms-campuslab-catalog/ms-campuslab-catalog
+    image: campuslab/catalog:latest
+    container_name: campuslab-catalog
+    environment:
+      <<: *common-env
+      DB_USER: campuslab_catalog
+    ports:
+      - "8082:8082"
+    networks:
+      - campuslab-net
+
+  notify:
+    build: ../../BackCampusLab/ms-campuslab-notify/ms-campuslab-notify
+    image: campuslab/notify:latest
+    container_name: campuslab-notify
+    environment:
+      <<: *common-env
+    ports:
+      - "8083:8083"
+    networks:
+      - campuslab-net
+
+  audit:
+    build: ../../BackCampusLab/ms-campuslab-audit/ms-campuslab-audit
+    image: campuslab/audit:latest
+    container_name: campuslab-audit
+    environment:
+      <<: *common-env
+      DB_USER: campuslab_audit
+    ports:
+      - "8084:8084"
+    networks:
+      - campuslab-net
+
+  report:
+    build: ../../BackCampusLab/ms-campuslab-report/ms-campuslab-report
+    image: campuslab/report:latest
+    container_name: campuslab-report
+    environment:
+      <<: *common-env
+      DB_USER: campuslab_report
+    ports:
+      - "8085:8085"
+    networks:
+      - campuslab-net
+
+  bff:
+    build: ../../BackCampusLab/ms-campuslab-bff/ms-campuslab-bff
+    image: campuslab/bff:latest
+    container_name: campuslab-bff
+    environment:
+      <<: *common-env
+      BOOKINGS_SERVICE_URL: http://campuslab-bookings:8081
+      CATALOG_SERVICE_URL: http://campuslab-catalog:8082
+      AUDIT_SERVICE_URL: http://campuslab-audit:8084
+      REPORT_SERVICE_URL: http://campuslab-report:8085
+    ports:
+      - "8080:8080"
+    networks:
+      - campuslab-net
+
+  rabbitmq-admin:
+    build: ../../BackCampusLab/ms-campuslab-rabbitmq/ms-campuslab-rabbitmq
+    image: campuslab/rabbitmq-admin:latest
+    container_name: campuslab-rabbitmq-admin
+    environment:
+      <<: *common-env
+    ports:
+      - "8086:8086"
+    networks:
+      - campuslab-net
+
+  kafka-admin:
+    build: ../../BackCampusLab/ms-campuslab-kafka/ms-campuslab-kafka
+    image: campuslab/kafka-admin:latest
+    container_name: campuslab-kafka-admin
+    environment:
+      <<: *common-env
+      KAFKA_REPLICATION_FACTOR: 1
+    ports:
+      - "8087:8087"
+    networks:
+      - campuslab-net
+
+networks:
+  campuslab-net:
+    external: true

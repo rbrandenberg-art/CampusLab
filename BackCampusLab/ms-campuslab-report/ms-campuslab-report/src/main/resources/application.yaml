@@ -1,0 +1,59 @@
+server:
+  port: ${SERVER_PORT:8085}
+
+spring:
+  application:
+    name: ms-campuslab-report
+
+  autoconfigure:
+    # AzureEventHubsKafkaOAuth2AutoConfiguration (de spring-cloud-azure-starter-active-directory)
+    # rompe el arranque con NoClassDefFoundError al combinarse con spring-kafka bajo Spring Boot 4.0.8
+    # (solo aplica a Event Hubs, que no usamos aquí). Confirmado en ms-campuslab-kafka y reproducido
+    # en este servicio.
+    exclude:
+      - com.azure.spring.cloud.autoconfigure.implementation.kafka.AzureEventHubsKafkaOAuth2AutoConfiguration
+
+  datasource:
+    url: jdbc:oracle:thin:@//${DB_HOST:localhost}:${DB_PORT:1521}/${DB_SERVICE:XEPDB1}
+    username: ${DB_USER:campuslab_report}
+    password: ${DB_PASSWORD:campuslab}
+    driver-class-name: oracle.jdbc.OracleDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID:CHANGEME-TENANT-ID}/v2.0
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: report-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+azure:
+  tenant-id: ${AZURE_TENANT_ID:CHANGEME-TENANT-ID}
+  client-id: ${AZURE_CLIENT_ID:CHANGEME-CLIENT-ID}
+
+campuslab:
+  kafka:
+    topic:
+      bookings-events: bookings.events
+  security:
+    roles-claim: roles
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

@@ -1,0 +1,33 @@
+server:
+  port: ${SERVER_PORT:8086}
+
+spring:
+  application:
+    name: ms-campuslab-rabbitmq
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID:CHANGEME-TENANT-ID}/v2.0
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+azure:
+  tenant-id: ${AZURE_TENANT_ID:CHANGEME-TENANT-ID}
+  client-id: ${AZURE_CLIENT_ID:CHANGEME-CLIENT-ID}
+
+app:
+  security:
+    roles-claim: roles
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

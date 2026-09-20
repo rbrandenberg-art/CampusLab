@@ -1,0 +1,70 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  application:
+    name: ms-campuslab-bookings
+
+  autoconfigure:
+    # AzureEventHubsKafkaOAuth2AutoConfiguration (de spring-cloud-azure-starter-active-directory)
+    # rompe el arranque con NoClassDefFoundError al combinarse con spring-kafka bajo Spring Boot 4.0.8
+    # (solo aplica a Event Hubs, que no usamos aquí). Confirmado en ms-campuslab-kafka y reproducido
+    # en este servicio.
+    exclude:
+      - com.azure.spring.cloud.autoconfigure.implementation.kafka.AzureEventHubsKafkaOAuth2AutoConfiguration
+
+  datasource:
+    url: jdbc:oracle:thin:@//${DB_HOST:localhost}:${DB_PORT:1521}/${DB_SERVICE:XEPDB1}
+    username: ${DB_USER:campuslab_bookings}
+    password: ${DB_PASSWORD:campuslab}
+    driver-class-name: oracle.jdbc.OracleDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID:CHANGEME-TENANT-ID}/v2.0
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+
+app:
+  azure:
+    tenant-id: ${AZURE_TENANT_ID:CHANGEME-TENANT-ID}
+    client-id: ${AZURE_CLIENT_ID:CHANGEME-CLIENT-ID}
+  security:
+    roles-claim: roles
+    scope-claim: scp
+  kafka:
+    topics:
+      bookings-events: bookings.events
+  rabbitmq:
+    exchanges:
+      cmd-direct: cmd.direct
+      cmd-topic: cmd.topic
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

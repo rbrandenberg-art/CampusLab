@@ -1,0 +1,34 @@
+name: campuslab-db
+
+services:
+  oracle:
+    image: gvenzl/oracle-free:23-slim
+    container_name: campuslab-oracle
+    environment:
+      ORACLE_PASSWORD: campuslab_admin
+      ORACLE_DATABASE: XEPDB1
+    ports:
+      # Host 1523 -> el 1521 ya está tomado en esta máquina y el 1522 lo usa
+      # otro proyecto (rutaexpress-oracle). Dentro de la red docker el puerto
+      # interno sigue siendo 1521 (así lo resuelven los otros servicios de
+      # CampusLab vía DB_HOST=oracle).
+      - "1523:1521"
+    volumes:
+      - campuslab-oracle-data:/opt/oracle/oradata
+      - ./init:/container-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+    networks:
+      - campuslab-net
+
+volumes:
+  campuslab-oracle-data:
+    name: campuslab-oracle-data
+
+networks:
+  campuslab-net:
+    external: true
