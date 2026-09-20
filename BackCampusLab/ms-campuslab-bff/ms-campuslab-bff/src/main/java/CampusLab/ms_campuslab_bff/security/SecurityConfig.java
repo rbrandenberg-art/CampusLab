@@ -36,8 +36,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/catalog/**").hasAnyRole("ADMIN", "TECNICO")
 
                         // Reservas: Admin, Tecnico y Estudiante para cualquier metodo.
-                        //.requestMatchers("/api/bookings/**").hasAnyRole("ADMIN", "TECNICO", "ESTUDIANTE")
-                        .requestMatchers("/api/bookings/**").authenticated()
+                        .requestMatchers("/api/bookings/**").hasAnyRole("ADMIN", "TECNICO", "ESTUDIANTE")
 
                         // Reportes: solo lectura, solo Admin.
                         .requestMatchers(HttpMethod.GET, "/api/report/**").hasRole("ADMIN")
