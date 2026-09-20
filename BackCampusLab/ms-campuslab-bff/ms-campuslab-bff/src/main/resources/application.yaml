@@ -43,3 +43,7 @@ campuslab:
     notify-url: ${NOTIFY_SERVICE_URL:http://localhost:8083}
     audit-url: ${AUDIT_SERVICE_URL:http://localhost:8084}
     report-url: ${REPORT_SERVICE_URL:http://localhost:8085}
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
