@@ -1,6 +1,6 @@
 import type { AccountInfo } from "@azure/msal-browser";
 
-export type Role = "Admin" | "Tecnico" | "Estudiante" | "Auditor";
+export type Role = "ADMIN" | "TECNICO" | "ESTUDIANTE" | "AUDITOR";
 
 // Valor de desarrollo usado solo cuando el token no trae el claim `roles`
 // (aun no existe el App Registration real con App Roles configurados en Azure AD).

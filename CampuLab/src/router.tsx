@@ -46,10 +46,10 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
     { to: "/dashboard", label: "Dashboard" },
-    { to: "/bookings", label: "Reservas", roles: ["Admin", "Tecnico", "Estudiante"] },
-    { to: "/catalog", label: "Catálogo", roles: ["Admin", "Tecnico"] },
-    { to: "/reports", label: "Reportería", roles: ["Admin"] },
-    { to: "/audit", label: "Auditoría", roles: ["Admin", "Auditor"] },
+    { to: "/bookings", label: "Reservas", roles: ["ADMIN", "TECNICO", "ESTUDIANTE"] },
+    { to: "/catalog", label: "Catálogo", roles: ["ADMIN", "TECNICO"] },
+    { to: "/reports", label: "Reportería", roles: ["ADMIN"] },
+    { to: "/audit", label: "Auditoría", roles: ["ADMIN", "AUDITOR"] },
 ];
 
 function Layout({ children }: { children: ReactNode }) {
@@ -116,7 +116,7 @@ export default function AppRouter() {
                 <Route
                     path="/bookings"
                     element={
-                        <ProtectedRoute allowedRoles={["Admin", "Tecnico", "Estudiante"]}>
+                        <ProtectedRoute allowedRoles={["ADMIN", "TECNICO", "ESTUDIANTE"]}>
                             <BookingsPage />
                         </ProtectedRoute>
                     }
@@ -125,7 +125,7 @@ export default function AppRouter() {
                 <Route
                     path="/catalog"
                     element={
-                        <ProtectedRoute allowedRoles={["Admin", "Tecnico"]}>
+                        <ProtectedRoute allowedRoles={["ADMIN", "TECNICO"]}>
                             <CatalogPage />
                         </ProtectedRoute>
                     }
@@ -134,7 +134,7 @@ export default function AppRouter() {
                 <Route
                     path="/reports"
                     element={
-                        <ProtectedRoute allowedRoles={["Admin"]}>
+                        <ProtectedRoute allowedRoles={["ADMIN"]}>
                             <ReportsPage />
                         </ProtectedRoute>
                     }
@@ -143,7 +143,7 @@ export default function AppRouter() {
                 <Route
                     path="/audit"
                     element={
-                        <ProtectedRoute allowedRoles={["Admin", "Auditor"]}>
+                        <ProtectedRoute allowedRoles={["ADMIN", "AUDITOR"]}>
                             <AuditPage />
                         </ProtectedRoute>
                     }
