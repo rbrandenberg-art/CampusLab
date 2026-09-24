@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api/audit")
 public class AuditProxyController {
 
-    private static final String STRIP_PREFIX = "/api/audit";
+    private static final String STRIP_PREFIX = "";
 
     private final ProxyService proxyService;
     private final String auditServiceUrl;

@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api/bookings")
 public class BookingsProxyController {
 
-    private static final String STRIP_PREFIX = "/api/bookings";
+    private static final String STRIP_PREFIX = "";
 
     private final ProxyService proxyService;
     private final String bookingsServiceUrl;

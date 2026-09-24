@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api/catalog")
 public class CatalogProxyController {
 
-    private static final String STRIP_PREFIX = "/api/catalog";
+    private static final String STRIP_PREFIX = "";
 
     private final ProxyService proxyService;
     private final String catalogServiceUrl;

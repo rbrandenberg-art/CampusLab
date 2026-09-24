@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequestMapping("/api/report")
 public class ReportProxyController {
 
-    private static final String STRIP_PREFIX = "/api/report";
+    private static final String STRIP_PREFIX = "";
 
     private final ProxyService proxyService;
     private final String reportServiceUrl;
