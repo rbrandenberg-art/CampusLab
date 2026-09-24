@@ -57,14 +57,17 @@ public class ProxyService {
         copyRequestHeaders(request, spec);
 
         try {
-            return spec.body(body != null ? body : new byte[0])
-                    .exchange((clientRequest, clientResponse) -> {
-                        byte[] responseBody = clientResponse.getBody().readAllBytes();
-                        HttpHeaders headers = filterResponseHeaders(clientResponse.getHeaders());
-                        return ResponseEntity.status(clientResponse.getStatusCode())
-                                .headers(headers)
-                                .body(responseBody);
-                    }, false);
+            if (body != null && body.length > 0) {
+    spec.body(body);
+}
+
+            return spec.exchange((clientRequest, clientResponse) -> {
+                byte[] responseBody = clientResponse.getBody().readAllBytes();
+                HttpHeaders headers = filterResponseHeaders(clientResponse.getHeaders());
+                return ResponseEntity.status(clientResponse.getStatusCode())
+                        .headers(headers)
+                        .body(responseBody);
+            }, false);
         } catch (ResourceAccessException ex) {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                     .body(("{\"error\":\"No fue posible contactar el servicio de dominio en "
