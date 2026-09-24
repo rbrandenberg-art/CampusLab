@@ -16,7 +16,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID:CHANGEME-TENANT-ID}/v2.0
+          issuer-uri: https://sts.windows.net/${AZURE_TENANT_ID:CHANGEME-TENANT-ID}/
 
 azure:
   tenant-id: ${AZURE_TENANT_ID:CHANGEME-TENANT-ID}

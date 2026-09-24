@@ -42,7 +42,7 @@ Regla clave: **no se puede pasar a EN_USO sin haber pasado por APROBADA**. El st
       oauth2:
         resourceserver:
           jwt:
-            issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID:CHANGEME-TENANT-ID}/v2.0
+            https://login.microsoftonline.com/${AZURE_TENANT_ID:CHANGEME-TENANT-ID}/v2.0
   ```
   Y en el `SecurityFilterChain`, exigir JWT válido en todos los endpoints salvo `/actuator/health`, con autorización por rol usando el claim de roles del token (`roles` o `scp` según venga de Azure AD — dejarlo configurable con un converter, ya que el nombre exacto del claim se ajustará cuando exista el App Registration real). Usa variables de entorno para `AZURE_TENANT_ID` y `AZURE_CLIENT_ID` con un valor por defecto de placeholder (`CHANGEME-TENANT-ID`, `CHANGEME-CLIENT-ID`) para que el proyecto compile y levante igual sin credenciales reales.
 - **Envelope común de eventos** (RabbitMQ y Kafka) — todos los mensajes que publiques o consumas deben tener esta forma (JSON):
