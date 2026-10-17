@@ -7,10 +7,29 @@ import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.*;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.DLQ_ROUTING_KEY_EMAIL;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.DLQ_ROUTING_KEY_PREP;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.DLQ_ROUTING_KEY_VOUCHER;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.EXCHANGE_CMD_DEAD_DLX;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.EXCHANGE_CMD_DIRECT;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.EXCHANGE_CMD_TOPIC;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.PATTERN_EMAIL;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.PATTERN_PREP;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.PATTERN_VOUCHER;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.QUEUE_EMAIL;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.QUEUE_EMAIL_DLQ;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.QUEUE_PREP;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.QUEUE_PREP_DLQ;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.QUEUE_VOUCHER;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.QUEUE_VOUCHER_DLQ;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.ROUTING_KEY_EMAIL_SEND;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.ROUTING_KEY_PREP_TICKET;
+import static CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitTopologyConstants.ROUTING_KEY_VOUCHER_GEN;
 
 /**
  * Declara la topología RabbitMQ completa de CampusLab: exchanges, colas
@@ -111,5 +130,15 @@ public class RabbitTopologyConfig {
                 .withArgument("x-dead-letter-exchange", EXCHANGE_CMD_DEAD_DLX)
                 .withArgument("x-dead-letter-routing-key", dlqRoutingKey)
                 .build();
+    }
+    @Bean
+    public ApplicationRunner forceRabbitAdminInitialization(ConnectionFactory connectionFactory) {
+        return args -> {
+            // Esto fuerza a Spring a abrir y cerrar una conexión con RabbitMQ al arrancar.
+            // Al conectarse, RabbitAdmin reacciona, detecta todos los beans Declarables
+            // y los crea automáticamente en el servidor.
+            connectionFactory.createConnection().close();
+            System.out.println("[RABBIT-ADMIN] Topología inicializada en el broker exitosamente.");
+        };
     }
 }
