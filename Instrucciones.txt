@@ -1,0 +1,45 @@
+Paso 1: obtener las ips publicas, bd, backapps y apps
+Paso 2: apigateway > integraciones > cambiar ip publica del backapps
+Paso 3: Entrar a ec2 bd 
+docker start campuslab-oracle
+docker exec -it campuslab-oracle bash
+sqlplus / as sysdba
+ALTER PLUGGABLE DATABASE ALL OPEN;
+PAso 4: Iniciar el backapps
+cd CampusLab/infra/apps/
+docker-compose up -d
+Paso 5: Iniciar el front(apps)
+cd CampusLab/CampuLab
+docker start campuslab-front
+Crear el tunel
+ssh -i "C:\Users\rhudy\Downloads\campuslab-key.pem" -L 5173:localhost:80 ec2-user@<Ip_publica_front
+http://localhost:5173/
+
+Configuracion manual db
+docker exec -it campuslab-oracle sqlplus sys/campuslab-admin@localhost/FREE as sysdba
+
+ALTER PLUGGABLE DATABASE FREEPDB1 OPEN;
+ALTER PLUGGABLE DATABASE FREEPDB1 SAVE STATE;
+
+ALTER SESSION SET CONTAINER=FREEPDB1;
+
+CREATE USER campuslab_bookings IDENTIFIED BY "campuslab";
+GRANT ALL PRIVILEGES TO campuslab_bookings;
+
+CREATE USER catalog IDENTIFIED BY "campuslab";
+GRANT ALL PRIVILEGES TO catalog;
+
+CREATE USER audit IDENTIFIED BY "campuslab";
+GRANT ALL PRIVILEGES TO audit;
+
+CREATE USER report IDENTIFIED BY "campuslab";
+GRANT ALL PRIVILEGES TO report;
+
+EXIT;
+
+Comando para backend y bd para memory swap
+sudo fallocate -l 4G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile swap swap defaults 0 0' | sudo tee -a /etc/fstab

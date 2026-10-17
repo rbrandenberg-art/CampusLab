@@ -14,3 +14,5 @@ spring:
         # La topología (colas/exchanges/DLQ) la declara ms-campuslab-rabbitmq.
         # No debe ser fatal si esta app arranca antes de que existan las colas.
         missing-queues-fatal: false
+        # NUEVO: Desactiva el auto-ack para controlar los mensajes manualmente
+        acknowledge-mode: manual

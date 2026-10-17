@@ -1,21 +1,31 @@
 package CampusLab.ms_campuslab_rabbitmq.web;
 
-import CampusLab.ms_campuslab_rabbitmq.web.dto.BindingInfo;
-import CampusLab.ms_campuslab_rabbitmq.web.dto.ExchangeInfo;
-import CampusLab.ms_campuslab_rabbitmq.web.dto.QueueInfo;
-import CampusLab.ms_campuslab_rabbitmq.web.dto.TopologyResponse;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.Declarable;
 import org.springframework.amqp.core.Declarables;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
+import CampusLab.ms_campuslab_rabbitmq.rabbit.RabbitAdminService;
+import CampusLab.ms_campuslab_rabbitmq.web.dto.BindingInfo;
+import CampusLab.ms_campuslab_rabbitmq.web.dto.CreateQueueRequest;
+import CampusLab.ms_campuslab_rabbitmq.web.dto.ExchangeInfo;
+import CampusLab.ms_campuslab_rabbitmq.web.dto.QueueInfo;
+import CampusLab.ms_campuslab_rabbitmq.web.dto.TopologyResponse;
+import jakarta.validation.Valid;
 
 /**
  * Endpoint de solo lectura que documenta/verifica la topología RabbitMQ
@@ -30,9 +40,11 @@ import java.util.List;
 public class RabbitTopologyController {
 
     private final Declarables topology;
+    private final RabbitAdminService rabbitAdminService;
 
-    public RabbitTopologyController(Declarables topology) {
+    public RabbitTopologyController(Declarables topology, RabbitAdminService rabbitAdminService) {
         this.topology = topology;
+        this.rabbitAdminService = rabbitAdminService;
     }
 
     @GetMapping("/topology")
@@ -57,5 +69,26 @@ public class RabbitTopologyController {
         }
 
         return new TopologyResponse(exchanges, queues, bindings);
+    }
+    // NUEVO ENDPOINT: Crear Cola (Cumple el 13% de la rúbrica)
+    @PostMapping("/queues")
+    @PreAuthorize("hasRole('Admin')")
+    public ResponseEntity<String> createQueue(@Valid @RequestBody CreateQueueRequest request) {
+        rabbitAdminService.createQueue(request.name(), request.durable());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Cola '" + request.name() + "' creada exitosamente.");
+    }
+
+    // NUEVO ENDPOINT: Eliminar Cola (Cumple el 13% de la rúbrica)
+    @DeleteMapping("/queues/{name}")
+    @PreAuthorize("hasRole('Admin')")
+    public ResponseEntity<String> deleteQueue(@PathVariable String name) {
+        boolean deleted = rabbitAdminService.deleteQueue(name);
+        if (deleted) {
+            return ResponseEntity.ok("Cola '" + name + "' eliminada exitosamente.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("La cola '" + name + "' no existe.");
+        }
     }
 }
