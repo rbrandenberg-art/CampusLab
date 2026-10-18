@@ -11,9 +11,20 @@ docker-compose up -d
 Paso 5: Iniciar el front(apps)
 cd CampusLab/CampuLab
 docker start campuslab-front
+Paso 6: Abrir rabbitmq y kafka
+cd CampusLab/infra/mq
+docker-compose up -d
+-------------------------
+cd CampusLab/infra/kafka
+docker-compose up -d
+
 Crear el tunel
 ssh -i "C:\Users\rhudy\Downloads\campuslab-key.pem" -L 5173:localhost:80 ec2-user@<Ip_publica_front
 http://localhost:5173/
+
+Abrir RabbitMQ
+http://Ip_publica_mq:15672/
+
 
 Configuracion manual db
 docker exec -it campuslab-oracle sqlplus sys/campuslab-admin@localhost/FREE as sysdba
@@ -43,3 +54,11 @@ sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
 echo '/swapfile swap swap defaults 0 0' | sudo tee -a /etc/fstab
+
+para el kafka
+docker volume rm campuslab-kafka-data
+docker exec -it campuslab-kafka-broker kafka-topics --create --topic bookings.events --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+
+
+docker stop campuslab-notify campuslab-report
+docker start campuslab-notify campuslab-report
